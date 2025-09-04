@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate, login, logout
+from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from user.models import User
 from .serializers import UserLoginSerializer, UserRegisterSerializer
@@ -9,6 +10,7 @@ from rest_framework.views import APIView, status
 
 class UserLoginAPI(APIView):
     serializer_class = UserLoginSerializer
+    permission_classes = [AllowAny]
 
     def post(self, request):
         serialized_data = self.serializer_class(data=request.data)
@@ -25,6 +27,12 @@ class UserLoginAPI(APIView):
 
 class UserRegisterAPI(APIView):
     serializer_class = UserRegisterSerializer
+
+    def get_permissions(self):
+        self.permission_classes = [AllowAny]
+        if self.request.method == "GET":
+            self.permission_classes = [AllowAny]
+        return super().get_permissions()
 
     def get(self, request):
         query_set = User.objects.all()

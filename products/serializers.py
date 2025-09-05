@@ -1,7 +1,5 @@
 from rest_framework import serializers
-from orders.models import Order
-from products.models import Category, Company, Product
-from user import models
+from products.models import Category, Company, Product, Reviews
 
 
 class CompanySerializer(serializers.ModelSerializer):
@@ -16,10 +14,19 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ["name"]
 
 
+class ReviewsSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source="user.username")
+
+    class Meta:
+        model = Reviews
+        fields = ["username", "review_text", "rating"]
+
+
 class ProductSerializer(serializers.ModelSerializer):
+    reviews = ReviewsSerializer(many=True, read_only=True)
     """There are two ways to display the name of the foreign table"""
 
-    """ 
+    """
     1. Is to use nested serializer
     """
     category_name = serializers.PrimaryKeyRelatedField(
@@ -41,6 +48,7 @@ class ProductSerializer(serializers.ModelSerializer):
             "description",
             "stock",
             "price",
+            "reviews",
             "category",
             "company",
             "category_name",

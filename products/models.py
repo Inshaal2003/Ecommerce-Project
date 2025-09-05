@@ -44,9 +44,11 @@ class Reviews(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     # Foreign Key
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, related_name="reviews"
+    )
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     # Magic Method
     def __str__(self) -> str:
-        return f"{self.product.name} has a rating of {self.rating}"
+        return f"{self.product.title} has a rating of {self.rating}"

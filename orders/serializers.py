@@ -17,12 +17,25 @@ class OrderItemSerializer(serializers.ModelSerializer):
 # Order Serializer
 class OrderSerializer(serializers.ModelSerializer):
     order_items = OrderItemSerializer(many=True, read_only=True)
+    username = serializers.CharField(source="user.username")
 
     class Meta:
         model = Order
-        fields = ["order_id", "order_items", "status", "created_at"]
+        fields = ["username", "order_id", "order_items", "status", "created_at"]
         extra_kwargs = {
             "order_id": {"read_only": True},
             "created_at": {"read_only": True},
             "status": {"read_only": True},
         }
+
+
+class OrderStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ["status"]
+
+
+class OrderCancelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ["status"]

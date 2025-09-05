@@ -9,6 +9,7 @@ class Order(models.Model):
         PENDING = "Pending"
         CONFIRMED = "Confirmed"
         CANCELLED = "Cancelled"
+        COMPLETED = "Completed"
 
     order_id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     created_at = models.DateTimeField(auto_now_add=True)

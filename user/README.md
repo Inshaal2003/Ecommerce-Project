@@ -1,7 +1,7 @@
 # User App Models
 So we started off by building our very own custom user model. There are three ways to build  a custom user model in django.
 
-1. Use thr `django.contrib.auth.models.User` models this comes with most fields that are supposed to be in a user model. It logs in by using the `username` and `password`. But beware you can't add or change the fields in this model.
+1. Use the `django.contrib.auth.models.User` models this comes with most fields that are supposed to be in a user model. It logs in by using the `username` and `password`. But beware you can't add or change the fields in this model.
 
 2. The second method is to use the `django.contrib.auth.models.AbstractUser.` model. It is similar to the `django.contrib.auth.models.User` model but it allows adding fields in the model. But it still log in using the `username` field.
 

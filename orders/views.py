@@ -1,4 +1,3 @@
-from functools import partial
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.views import APIView
@@ -12,14 +11,18 @@ from .serializers import OrderCancelSerializer, OrderSerializer, OrderStatusSeri
 # Order List View
 class OrderView(APIView):
     serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        """Only Logged in users can view their orders."""
         if not request.user.is_authenticated:
             return Response(
                 {"message": "Please login to view your orders"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        """Filter the orders according to the users"""
         order_query_set = Order.objects.filter(user=request.user)
+        """Check if user is admin so that he can view all products."""
         if request.user.is_staff:
             order_query_set = Order.objects.all()
         serialize_query_set = self.serializer_class(order_query_set, many=True)
@@ -28,8 +31,10 @@ class OrderView(APIView):
 
 class OrderDetailView(APIView):
     def get_permissions(self):
+        """Only Admins can update and delete orders."""
         self.permission_classes = [IsAdminUser]
         if self.request.method == "GET":
+            """User has to login to view their orders."""
             self.permission_classes = [IsAuthenticated]
         return super().get_permissions()
 
@@ -61,6 +66,7 @@ class OrderDetailView(APIView):
 
 class OrderCancelView(APIView):
     serializer_class = OrderCancelSerializer
+    permission_classes = [IsAuthenticated]
 
     def patch(self, request, pk):
         if not request.user.is_authenticated:

@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from .models import Order, OrderItem
-from products.serializers import ProductSerializer
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -30,12 +29,16 @@ class OrderSerializer(serializers.ModelSerializer):
 
 
 class OrderStatusSerializer(serializers.ModelSerializer):
+    """This is for changing the status from Pending to Confirmed to Completed."""
+
     class Meta:
         model = Order
         fields = ["status"]
 
 
 class OrderCancelSerializer(serializers.ModelSerializer):
+    """This is for changing the status from Pending to Cancelled."""
+
     class Meta:
         model = Order
         fields = ["status"]

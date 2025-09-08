@@ -5,6 +5,9 @@ import uuid
 
 
 class Order(models.Model):
+    """So our first model is Order. It will contain info about
+    out products that the user has ordered."""
+
     class StatusChoices(models.TextChoices):
         PENDING = "Pending"
         CONFIRMED = "Confirmed"
@@ -16,7 +19,8 @@ class Order(models.Model):
     status = models.CharField(
         max_length=10, choices=StatusChoices.choices, default=StatusChoices.PENDING
     )
-    # Foreign Keys
+    """ Foreign Keys
+        It has a ForeignKey relationship with the user and products models."""
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     products = models.ManyToManyField(
         Product,
@@ -29,6 +33,8 @@ class Order(models.Model):
 
 
 class OrderItem(models.Model):
+    """This is a junction table for Products and Orders. Since the relationship between product and orders is that of many-to-many."""
+
     quantity = models.PositiveIntegerField()
 
     # Foreign Keys

@@ -9,14 +9,16 @@ from rest_framework.views import APIView, status
 
 
 class UserLoginAPI(APIView):
+    # Defining the serializer class.
     serializer_class = UserLoginSerializer
+    # Allowing anyone to send a login request.
     permission_classes = [AllowAny]
 
     def post(self, request):
         serialized_data = self.serializer_class(data=request.data)
         if serialized_data.is_valid():
-            username = serialized_data.validated_data.get("username")
-            password = serialized_data.validated_data.get("password")
+            username = serialized_data.validated_data.get("username")  # pyright: ignore
+            password = serialized_data.validated_data.get("password")  # pyright: ignore
             userObj = authenticate(username=username, password=password)
             login(request, userObj)
             return Response({"message": "Login Sucessfull."})
@@ -43,8 +45,8 @@ class UserRegisterAPI(APIView):
         serialized_data = self.serializer_class(data=request.data)
         if serialized_data.is_valid():
             serialized_data.save()
-            username = serialized_data.validated_data.get("username")
-            password = serialized_data.validated_data.get("password")
+            password = serialized_data.validated_data.get("password")  # pyright: ignore
+            username = serialized_data.validated_data.get("username")  # pyright: ignore
             userObj = authenticate(username=username, password=password)
             login(request, userObj)
             return Response(serialized_data.data, status=status.HTTP_201_CREATED)

@@ -1,13 +1,10 @@
-from django.http import HttpResponse
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework import status
 from products.models import Product
 from django.shortcuts import get_object_or_404
-
-from user import models
-from .models import Order, OrderItem
+from .models import Order
 from .serializers import (
     OrderCancelSerializer,
     OrderCreateSerializer,
@@ -101,21 +98,21 @@ class OrderCreateView(APIView):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
 
-            # Popping out proudct_id and quantity.
+            """Popping out proudct_id and quantity."""
             order_data = serializer.validated_data.pop("order_data")
             product_id = order_data["product"]["id"]
             quantity = order_data["quantity"]
 
-            # Checking if there is a product associated with the product id
+            """Checking if there is a product associated with the product id."""
             product = get_object_or_404(Product, pk=product_id)
 
-            # Sending the user obj, product obj and quantity value to the save() method.
-            # These values will be available in the validated_data dictionary.
+            """Sending the user obj, product obj and quantity value to the save() method.
+            These values will be available in the validated_data dictionary."""
             serializer.save(user=request.user, product=product, quantity=quantity)
 
             return Response({"message": "Congratulations Your Order has been created."})
 
-        # If the data is not valid.
+        """ If the data is not valid."""
         return Response(
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST,

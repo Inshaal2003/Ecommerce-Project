@@ -46,11 +46,15 @@ class OrderCancelSerializer(serializers.ModelSerializer):
 
 class OrderCreateSerializer(serializers.ModelSerializer):
     class OrderItemCreateSerializer(serializers.ModelSerializer):
+        """Using IntegerField for product id."""
+
         product_id = serializers.IntegerField(source="product.id")
 
         class Meta:
             model = OrderItem
             fields = ["product_id", "quantity"]
+
+        """Validator for quantity checking if quantity > 0."""
 
         def validate_quantity(self, value):
             if value == 0:
@@ -66,20 +70,25 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         fields = ["order_data"]
 
     def create(self, validated_data):
+        """Getting product and user object as well as quantity from the validated_data."""
         product = validated_data.pop("product")
         user = validated_data.pop("user")
         quantity = validated_data.pop("quantity")
 
+        """Checking if the quantity is greater than stock available."""
         if quantity > product.stock:
             raise serializers.ValidationError(
                 "We do not have enough stock to match your order."
             )
 
+        """Updating the stock value."""
         product.stock = product.stock - quantity
         product.save()
 
+        """Creating the order object and than creating the order item object."""
         order = Order.objects.create(user=user)
         order_items = OrderItem.objects.create(
             order=order, product=product, quantity=quantity
         )
+        """Returning the order instance."""
         return order

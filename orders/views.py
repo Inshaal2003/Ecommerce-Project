@@ -1,11 +1,19 @@
+from django.http import HttpResponse
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework import status
 from products.models import Product
 from django.shortcuts import get_object_or_404
+
+from user import models
 from .models import Order, OrderItem
-from .serializers import OrderCancelSerializer, OrderSerializer, OrderStatusSerializer
+from .serializers import (
+    OrderCancelSerializer,
+    OrderCreateSerializer,
+    OrderSerializer,
+    OrderStatusSerializer,
+)
 
 
 # Order List View
@@ -87,38 +95,28 @@ class OrderCancelView(APIView):
 
 
 class OrderCreateView(APIView):
-
-    permission_classes = [IsAuthenticated]
+    serializer_class = OrderCreateSerializer
 
     def post(self, request):
-        product_id = request.data.get("product_id")
-        quantity = request.data.get("quantity")
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
 
-        try:
-            product = Product.objects.get(pk=product_id)
-        except Product.DoesNotExist:
-            return Response(
-                {"message": "The product you are trying to buy does not exsist."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-        else:
-            if quantity > product.stock:
-                return Response(
-                    {
-                        "message": f"We don't have enough stock to complete your order. Only {product.stock} items are available right now."
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            product.stock = product.stock - quantity
-            product.save()
-            order = Order.objects.create(user=request.user)
-            orderItem = OrderItem.objects.create(
-                order=order, product=product, quantity=quantity
-            )
-            return Response(
-                {
-                    "message": "Your order has been placed your order id is",
-                    "order_id": order.order_id,
-                },
-                status=status.HTTP_201_CREATED,
-            )
+            # Popping out proudct_id and quantity.
+            order_data = serializer.validated_data.pop("order_data")
+            product_id = order_data["product"]["id"]
+            quantity = order_data["quantity"]
+
+            # Checking if there is a product associated with the product id
+            product = get_object_or_404(Product, pk=product_id)
+
+            # Sending the user obj, product obj and quantity value to the save() method.
+            # These values will be available in the validated_data dictionary.
+            serializer.save(user=request.user, product=product, quantity=quantity)
+
+            return Response({"message": "Congratulations Your Order has been created."})
+
+        # If the data is not valid.
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST,
+        )

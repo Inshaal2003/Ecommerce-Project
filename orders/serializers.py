@@ -42,3 +42,44 @@ class OrderCancelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ["status"]
+
+
+class OrderCreateSerializer(serializers.ModelSerializer):
+    class OrderItemCreateSerializer(serializers.ModelSerializer):
+        product_id = serializers.IntegerField(source="product.id")
+
+        class Meta:
+            model = OrderItem
+            fields = ["product_id", "quantity"]
+
+        def validate_quantity(self, value):
+            if value == 0:
+                raise serializers.ValidationError(
+                    "You can not enter 0 as a quantity. Genius"
+                )
+            return value
+
+    order_data = OrderItemCreateSerializer()
+
+    class Meta:
+        model = Order
+        fields = ["order_data"]
+
+    def create(self, validated_data):
+        product = validated_data.pop("product")
+        user = validated_data.pop("user")
+        quantity = validated_data.pop("quantity")
+
+        if quantity > product.stock:
+            raise serializers.ValidationError(
+                "We do not have enough stock to match your order."
+            )
+
+        product.stock = product.stock - quantity
+        product.save()
+
+        order = Order.objects.create(user=user)
+        order_items = OrderItem.objects.create(
+            order=order, product=product, quantity=quantity
+        )
+        return order

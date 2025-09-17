@@ -1,3 +1,4 @@
+from django.contrib.auth import authenticate
 from rest_framework import serializers
 from user.models import User
 
@@ -7,6 +8,12 @@ class UserLoginSerializer(serializers.Serializer):
     password = serializers.CharField(
         max_length=128, write_only=True, style={"input_type": "password"}
     )
+
+    def validate(self, attrs):
+        user = authenticate(**attrs)
+        if user and user.is_active:
+            return user
+        raise serializers.ValidationError("Incorrect Credentials.")
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):

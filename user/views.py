@@ -1,12 +1,16 @@
 from django.contrib.auth import authenticate, login, logout
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.status import HTTP_400_BAD_REQUEST
 from user.models import User
 from .serializers import UserLoginSerializer, UserRegisterSerializer
 from rest_framework.views import APIView, status
 from rest_framework_simplejwt.tokens import RefreshToken
 
 # from rest_framework.permissions import AllowAny, IsAdminUser
+
+
+""" URL: http://127.0.0.1:8000/api/account/login/ """
 
 
 class UserLoginAPI(APIView):
@@ -99,7 +103,27 @@ class UserRegisterAPI(APIView):
         return Response(serialized_data.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+""" URL: http://127.0.0.1:8000/api/account/logout/ """
+
+
 class UserLogoutAPI(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
-        logout(request)
-        return Response({"message": "Logout Sucessfull."}, status=status.HTTP_200_OK)
+        try:
+            refresh_token = request.data["refresh"]
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return Response(
+                {"message": "You have been logged out"},
+                status=status.HTTP_205_RESET_CONTENT,
+            )
+        except:
+            """
+            This is only if you are using session auth.
+                logout(request)
+            """
+            return Response(
+                {"message": "Something has gone wrong."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
